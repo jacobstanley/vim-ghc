@@ -1,0 +1,26 @@
+name:                vim-ghc
+version:             0.1.0.0
+synopsis:            Vim support for Haskell
+homepage:            http://github.com/jystic/vim-ghc
+license:             BSD3
+license-file:        LICENSE
+author:              Jacob Stanley <jacob@stanley.io>
+maintainer:          Jacob Stanley <jacob@stanley.io>
+category:            Development
+build-type:          Simple
+cabal-version:       >=1.6
+
+executable vim-ghc
+  hs-source-dirs: src
+  main-is: Main.hs
+
+  build-depends:
+      base      == 4.*
+    , directory == 1.1.*
+    , filepath  == 1.2.*
+    , hint      == 0.3.*
+
+  ghc-options:
+    -O2 -Wall -rtsopts
+    -fno-warn-unused-do-bind
+    -fwarn-tabs
