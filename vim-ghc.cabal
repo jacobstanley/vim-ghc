@@ -15,10 +15,8 @@ executable vim-ghc
   main-is: Main.hs
 
   build-depends:
-      base      == 4.*
-    , directory == 1.1.*
-    , filepath  == 1.2.*
-    , hint      == 0.3.*
+      base    == 4.*
+    , network == 2.3.*
 
   ghc-options:
     -O2 -Wall -rtsopts

@@ -1,36 +1,40 @@
 module Main (main) where
 
 import Control.Monad
-import System.Directory (canonicalizePath)
-import System.FilePath (dropFileName)
-import Language.Haskell.Interpreter
+import Data.List
+import Network
+import System.IO
+
+------------------------------------------------------------------------
 
 main :: IO ()
-main = do
-    --path <- canonicalizePath "../ghc-mod/GHCMod.hs"
-    path <- canonicalizePath "examples/Test.hs"
-    --putStr ("Loading " ++ path ++ "...")
+main = withSocketsDo $ do
+    s <- listenOn (PortNumber 9191)
 
-    xs <- runInterpreter $ replicateM 100 $ do
-        set [searchPath := [dropFileName path]]
+    (h, host, port) <- accept s
+    putStrLn ("Received connection from " ++ host ++ ":" ++ show port)
 
-        loadModules [path]
-        modules <- getLoadedModules
-        setTopLevelModules modules
-        --liftIO (putStrLn "done")
+    authenticate h
 
-        t <- typeOf "add"
-        liftIO (putStrLn ("add :: " ++ t))
+    forever (hGetLine h >>= putStrLn)
 
-        e1 <- interpret "pwd" infer
-        liftIO (e1 >>= putStrLn)
+    return ()
 
-        e2 <- eval "add 1 (add 4 5)"
-        liftIO (putStrLn e2)
+authenticate :: Handle -> IO ()
+authenticate h = do
+    msg <- hGetLine h
 
-        exp <- getModuleExports "System.Directory"
-        liftIO (print exp)
+    unless (auth `isPrefixOf` msg)
+           (detach ("Expected AUTH message, received '" ++ msg ++ "'"))
 
-    case xs of
-        Left x -> print x
-        _      -> return ()
+    let pwd = drop (length auth) msg
+
+    unless (pwd == "vim-ghc")
+           (detach ("Invalid password '" ++ pwd ++ "', use 'vim-ghc' \
+                    \to connect to this server"))
+  where
+    auth = "AUTH "
+
+    detach msg = do
+      hPutStrLn h "DETACH"
+      error ("vim-ghc: " ++ msg)
